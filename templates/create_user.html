@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Usuario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="login-card">
+            <h2>Crear Usuario</h2>
+
+            <form method="POST" action="{{ url_for('create_user') }}" autocomplete="off">
+                <div class="input-group">
+                    <label for="nombre">Nombre</label>
+                    <input type="text" id="nombre" name="nombre" required aria-label="Nombre del Usuario">
+                </div>
+
+                <div class="input-group">
+                    <label for="apellido">Apellido</label>
+                    <input type="text" id="apellido" name="apellido" required aria-label="Apellido del Usuario">
+                </div>
+
+                <div class="input-group">
+                    <label for="usuario">Usuario</label>
+                    <input type="text" id="usuario" name="usuario" required aria-label="Nombre de Usuario" autocomplete="username">
+                </div>
+
+                <div class="input-group">
+                    <label for="contrasena">Contraseña</label>
+                    <input type="password" id="contrasena" name="contrasena" required aria-label="Contraseña" autocomplete="new-password" minlength="8">
+                </div>
+
+                <div class="input-group">
+                    <label for="tipo_usuario">Tipo de Usuario</label>
+                    <select id="tipo_usuario" name="tipo_usuario" required aria-label="Tipo de Usuario">
+                        <option value="farmaceutico">Farmacéutico</option>
+                    </select>
+                </div>
+
+                <div class="input-group" id="especializacion-group" style="display: none;">
+                    <label for="especializacion">Especialización</label>
+                    <input type="text" id="especializacion" name="especializacion" aria-label="Especialización del Doctor">
+                </div>
+
+                <div class="input-group">
+                    <label for="telefono">Teléfono</label>
+                    <input type="text" id="telefono" name="telefono" required aria-label="Teléfono del Usuario">
+                </div>
+
+                <div class="input-group">
+                    <label for="correo_electronico">Correo Electrónico</label>
+                    <input type="email" id="correo_electronico" name="correo_electronico" required aria-label="Correo Electrónico">
+                </div>
+
+                <button type="submit" class="btn-submit">Crear Usuario</button>
+            </form>
+
+            <!-- Mostrar mensajes de error o éxito -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="alert" role="alert" aria-live="assertive">
+                        <ul>
+                            {% for category, message in messages %}
+                                <li>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <div class="links">
+                <a href="{{ url_for('index') }}">Volver al inicio</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mostrar el campo de especialización solo si se selecciona Doctor
+        document.getElementById('tipo_usuario').addEventListener('change', function() {
+            var especializacionGroup = document.getElementById('especializacion-group');
+            if (this.value === 'doctor') {
+                especializacionGroup.style.display = 'block';
+            } else {
+                especializacionGroup.style.display = 'none';
+                document.getElementById('especializacion').value = ''; // Limpiar el campo
+            }
+        });
+    </script>
+
+</body>
+</html>

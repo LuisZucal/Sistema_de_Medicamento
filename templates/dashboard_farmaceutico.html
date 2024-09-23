@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrega de Medicamentos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <!-- Contenedor Principal -->
+    <div class="login-container">
+
+        <!-- Tarjeta de Búsqueda -->
+        <div class="login-card">
+            <!-- Encabezado con los logos -->
+            <div class="header">
+                <img src="{{ url_for('static', filename='images/MINSAL.png') }}" alt="Logo del Ministerio de Salud" class="logo1" width="10px">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo Hospital" class="logo">
+                
+            </div>
+
+            <!-- Contenido Principal -->
+            <div class="main-content">
+                <h1>Entrega de Medicamentos</h1>
+
+                <!-- Formulario de Búsqueda -->
+                <form action="/buscar_paciente" method="POST">
+                    <div class="input-group">
+                        <label for="rut_paciente">Rut Paciente</label>
+                        <input type="text" id="rut_paciente" name="rut_paciente" placeholder="Ingrese el Rut del paciente" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Buscar</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

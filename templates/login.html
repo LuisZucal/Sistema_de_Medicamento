@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script>
+        function togglePassword() {
+            var passwordField = document.getElementById('contrasena');
+            var passwordToggle = document.getElementById('password-toggle');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                passwordToggle.textContent = 'Ocultar';
+            } else {
+                passwordField.type = 'password';
+                passwordToggle.textContent = 'Mostrar';
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <img src="{{ url_for('static', filename='images/MINSAL.png') }}" alt="Logo del Ministerio de Salud" class="logo1" width="10px">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo Hospital" class="logo">
+            <h1>Iniciar sesión</h1>
+            <form method="post" action="{{ url_for('login') }}" autocomplete="off">
+                <div class="input-group">
+                    <label for="username">Nombre de Usuario</label>
+                    <input type="text" id="username" name="usuario" placeholder="Ingrese su usuario" required aria-label="Nombre de Usuario">
+                </div>
+                <div class="input-group">
+                    <label for="contrasena">Contraseña</label>
+                    <div class="password-container">
+                        <input type="password" id="contrasena" name="contrasena" placeholder="Ingrese su contraseña" required aria-label="Contraseña">
+                        <button type="button" id="password-toggle" onclick="togglePassword()">Mostrar</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="recuerdame">Recuérdame</label>
+                    <input type="checkbox" id="recuerdame" name="recuerdame">
+                    
+                </div>
+                <input type="hidden" name="tipo_usuario" value="doctor">
+                <input type="submit" value="Iniciar sesión" class="btn-submit">
+                <div class="links">
+                    <a href="/forgot-password" class="forgot-password">¿Olvidaste tu Contraseña?</a>
+                </div>
+            </form>
+            
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert" role="alert" aria-live="assertive">
+                        <ul>
+                            {% for message in messages %}
+                                <li>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,142 @@
+/* static/css/styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.login-card {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    padding: 30px; /* Reducido */
+    width: 350px; /* Reducido */
+    text-align: center;
+}
+
+.logo {
+    width: 120px;
+    margin-bottom: 20px;
+}
+
+.input-group {
+    margin-bottom: 15px; /* Reducido */
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.input-group input,
+.input-group select {
+    width: calc(100% - 22px);
+    padding: 10px; /* Reducido */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: border 0.3s;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    border-color: #0044cc;
+    outline: none;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 10px; /* Reducido */
+    background-color: #0044cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 15px; /* Ajustado */
+    transition: background-color 0.3s;
+}
+
+.btn-submit:hover {
+    background-color: #0033aa;
+}
+
+.alert {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 15px; /* Reducido */
+    text-align: left;
+}
+
+.alert ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.alert li {
+    margin-bottom: 5px;
+}
+
+.links {
+    margin-top: 10px; /* Reducido */
+}
+
+.links a {
+    color: #0044cc;
+    text-decoration: none;
+    font-size: 13px; /* Ajustado */
+}
+
+.links a:hover {
+    text-decoration: underline;
+}
+
+.logo1 {
+    border-radius: 5%;
+    width: 73px;
+    height: 73px;
+    object-fit: cover;
+}
+
+.password-container {
+    position: relative;
+}
+
+.password-container input {
+    padding-right: 80px; /* Espacio para el botón */
+}
+
+.password-container button {
+    position: absolute;
+    right: 23px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #ffffff;
+    border: none;
+    color: rgb(151, 151, 151);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+
+

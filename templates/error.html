@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="error-container">
+        <h1>Error: {{ error }}</h1>
+        <p>Lo sentimos, ha ocurrido un problema. Por favor, intenta lo siguiente:</p>
+        <ul>
+            <li>Verifica que la URL sea correcta.</li>
+            <li>Intenta refrescar la página.</li>
+            <li>Si el problema persiste, contacta al soporte técnico.</li>
+        </ul>
+        <div class="navigation-links">
+            <a href="{{ url_for('login') }}">Volver al inicio de sesión</a>
+            <a href="{{ url_for('index') }}">Ir a la página principal</a>
+        </div>
+    </div>
+</body>
+</html>
+
