@@ -1,145 +1,250 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recetas de {{ paciente.Nombre }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .header img {
-            max-width: 150px;
-            margin: 10px;
-        }
-        h1 {
-            color: #2c3e50;
-            margin: 10px 0;
-            font-size: 1.8em;
-        }
-        .patient-info {
-            background-color: #e9ecef;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
-            color: #2980b9;
-            margin-bottom: 10px;
-            font-size: 1.5em;
-        }
-        .receta-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .receta-list li {
-            background: #f8f9fa;
-            margin: 10px 0;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .receta-list input[type="checkbox"] {
-            margin-right: 15px;
-        }
-        .receta-list label {
-            flex-grow: 1;
-            margin-left: 10px;
-            color: #34495e;
-        }
-        .back-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .back-link a {
-            color: #2980b9;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s;
-        }
-        .back-link a:hover {
-            color: #1abc9c;
-        }
-        .button-container {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-        }
-        .btn {
-            padding: 10px 20px;
-            background-color: #2980b9;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.3s;
-        }
-        .btn:hover {
-            background-color: #1a6d8d;
-            transform: translateY(-2px);
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_receta.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ url_for('static', filename='images/MINSAL.png') }}" alt="Logo del Ministerio de Salud" class="logo1">
+            <img src="{{ url_for('static', filename='images/MINSAL.png') }}" alt="Logo del Ministerio de Salud"
+                class="logo1">
             <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo Hospital" class="logo">
             <h1>Recetas de {{ paciente.Nombre }} {{ paciente.Apellido }}</h1>
         </div>
-        
+
         <div class="patient-info">
             <h2>Información del Paciente</h2>
             <p><strong>RUT:</strong> {{ paciente.Rut }}</p>
             <p><strong>Edad:</strong> {{ paciente.Edad }}</p>
             <p><strong>Dirección:</strong> {{ paciente.Direccion }}</p>
         </div>
-        
-        <h2>Recetas</h2>
-        <ul class="receta-list">
-            {% for receta in recetas %}
-                <li>
-                    <input type="checkbox" id="receta-{{ loop.index }}" name="receta" value="{{ receta.id }}">
-                    <label for="receta-{{ loop.index }}">
-                        <strong>Medicamento:</strong> {{ receta.medicamento.Nombre }}<br>
-                        <strong>Cantidad:</strong> {{ receta.CantidadMedicamento }}<br>
-                        <strong>Fecha:</strong> {{ receta.FechaEntrega }}<br>
-                        <strong>Doctor:</strong> {{ receta.doctor.Nombre }} {{ receta.doctor.Apellido }}
-                    </label>
-                </li>
-            {% else %}
-                <li>No hay recetas para este paciente.</li>
-            {% endfor %}
-        </ul>
-        
-        <div class="button-container">
-            <button class="btn">Entregar</button>
-            <button class="btn">Entregar Tercero</button>
+
+        <h1>Entrega de medicamentos</h1>
+
+        <div class="double-column">
+            <div class="column">
+                <div class="checkbox-container">
+                    <div>
+                        <input type="checkbox" id="entrega_paciente" name="entrega_paciente" onchange="toggleFields()">
+                        <label for="entrega_paciente">Entrega paciente</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="entrega_tercero" name="entrega_tercero" onchange="toggleFields()">
+                        <label for="entrega_tercero">Entrega Tercero</label>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="form-group">
+                    <label for="fecha">Fecha:</label>
+                    <input type="date" id="fecha" name="fecha" required>
+                </div>
+            </div>
         </div>
-        
+
+        <div id="rut-nombre-container" style="display: none;">
+            <div class="form-group">
+                <label for="rut">Rut:</label>
+                <input type="text" id="rut" name="rut" placeholder="Ingrese el Rut" required>
+            </div>
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" placeholder="Ingrese el Nombre" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="tipo-medicamento">Tipo Medicamento:</label>
+            <select id="tipo-medicamento" name="tipo-medicamento" required onchange="showMedicamentos()">
+                <option value="">Cargando tipos de medicamento...</option>
+            </select>
+        </div>
+
+        <div id="medicamento-container" class="medicamento-container" style="display: none;">
+            <div class="form-group">
+                <label for="medicamento">Medicamento:</label>
+                <select id="medicamento" name="medicamento">
+                    <option value="">Seleccione un medicamento</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="cantidad">Cantidad:</label>
+                <input type="number" id="cantidad" name="cantidad" min="1" placeholder="Ingrese la cantidad" required>
+            </div>
+            <div class="button-container">
+                <button type="button" class="btn" onclick="cargarMedicamento()">Cargar Medicamento</button>
+            </div>
+        </div>
+
+        <div class="medicamentos-list" id="medicamentos-list">
+            <h3>Medicamentos Cargados:</h3>
+            <div id="medicamentos"></div>
+        </div>
+
+        <div class="button-container">
+            <button type="button" class="btn" onclick="entregarMedicamentos()">Entregar</button>
+        </div>
+
+        <div id="mensaje" style="display: none; margin-top: 10px; color: green;">
+            Medicamentos entregados.
+        </div>
+
         <div class="back-link">
-            <a href="/">Volver</a>
+            <a href="{{ url_for('dashboard_farmaceutico') }}" title="Volver al panel farmacéutico">Volver</a>
         </div>
     </div>
+
+    <script>
+        $(document).ready(function () {
+            // Cargar tipos de medicamentos al cargar la página
+            $.ajax({
+                url: '/tipo_medicamento',
+                type: 'GET',
+                success: function (data) {
+                    const tipoSelect = $('#tipo-medicamento');
+                    tipoSelect.empty(); // Limpiar opciones anteriores
+                    tipoSelect.append('<option value="">Seleccione un tipo</option>'); // Opción por defecto
+
+                    // Iterar sobre los tipos de medicamento y añadirlos al combo box
+                    $.each(data.tipos_medicamentos, function (index, tipo) {
+                        tipoSelect.append('<option value="' + tipo.id_tipo + '">' + tipo.nombre_tipo + '</option>');
+                    });
+                },
+                error: function () {
+                    alert('Error al cargar los tipos de medicamento.');
+                }
+            });
+        });
+
+        function mostrarMensaje() {
+            document.getElementById('mensaje').style.display = 'block';
+        }
+
+        function toggleFields() {
+            const entregaTerceroCheckbox = document.getElementById('entrega_tercero');
+            const rutNombreContainer = document.getElementById('rut-nombre-container');
+
+            // Mostrar u ocultar el contenedor de RUT y Nombre
+            rutNombreContainer.style.display = entregaTerceroCheckbox.checked ? 'block' : 'none';
+        }
+
+        function showMedicamentos() {
+            const tipoMedicamento = document.getElementById('tipo-medicamento').value;
+            const medicamentoContainer = document.getElementById('medicamento-container');
+            const medicamentoSelect = document.getElementById('medicamento');
+
+            medicamentoSelect.innerHTML = '<option value="">Seleccione un medicamento</option>';
+
+            if (tipoMedicamento) {
+                medicamentoContainer.style.display = 'block';
+
+                // Realiza la llamada AJAX para obtener los medicamentos según el tipo seleccionado
+                fetch(`/medicamentos/${tipoMedicamento}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(medicamento => {
+                            const option = document.createElement('option');
+                            option.value = medicamento.id;
+                            option.textContent = medicamento.nombre; // Solo mostrar el nombre
+                            medicamentoSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error al obtener medicamentos:', error);
+                        alert('No se pudieron cargar los medicamentos. Intente de nuevo.');
+                    });
+            } else {
+                medicamentoContainer.style.display = 'none';
+            }
+        }
+
+        let medicamentosCargados = [];  // Array temporal para almacenar medicamentos
+
+        function cargarMedicamento() {
+            const medicamentoSelect = document.getElementById('medicamento');
+            const medicamentoNombre = medicamentoSelect.options[medicamentoSelect.selectedIndex].text;
+            const cantidad = document.getElementById('cantidad').value;
+
+            if (!medicamentoSelect.value) {
+                alert('Por favor, seleccione un medicamento.');
+                return;
+            }
+
+            if (!cantidad || cantidad <= 0) {
+                alert('Ingrese una cantidad válida.');
+                return;
+            }
+
+            const medicamentosDiv = document.getElementById('medicamentos');
+            const newMedicamento = document.createElement('div');
+            newMedicamento.textContent = `${medicamentoNombre} - Cantidad: ${cantidad}`;
+            medicamentosDiv.appendChild(newMedicamento);
+
+            // Agregar el medicamento cargado al array temporal
+            medicamentosCargados.push({ nombre: medicamentoNombre, cantidad: cantidad });
+
+            // Limpiar el campo de cantidad después de cargar el medicamento
+            document.getElementById('cantidad').value = '';
+        }
+
+        function entregarMedicamentos() {
+            // Validar si la entrega es para un tercero
+            const entregaTerceroCheckbox = document.getElementById('entrega_tercero');
+            const rut = entregaTerceroCheckbox.checked ? document.getElementById('rut').value : '{{ paciente.Rut }}';
+            const nombre = entregaTerceroCheckbox.checked ? document.getElementById('nombre').value : '{{ paciente.Nombre }}';
+            const fecha = document.getElementById('fecha').value;
+
+            if (!fecha) {
+                alert('Por favor, seleccione una fecha.');
+                return;
+            }
+
+            if (entregaTerceroCheckbox.checked && (!rut || !nombre)) {
+                alert('Por favor, complete el RUT y Nombre del tercero.');
+                return;
+            }
+
+            if (medicamentosCargados.length === 0) {
+                alert('No hay medicamentos cargados para entregar.');
+                return;
+            }
+
+            // Enviar los datos a la ruta de Flask
+            fetch('/cargar_medicamento', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    rut: rut,
+                    nombre: nombre,
+                    fecha: fecha,
+                    medicamentos: medicamentosCargados  // Enviar los medicamentos cargados
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        mostrarMensaje();
+                        medicamentosCargados = [];  // Limpiar array de medicamentos cargados
+                        document.getElementById('medicamentos').innerHTML = '';  // Limpiar lista visual
+                    } else {
+                        alert('Error al entregar medicamentos. Intente de nuevo.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al enviar la solicitud:', error);
+                    alert('Hubo un error al procesar la solicitud.');
+                });
+        }
+    </script>
+
 </body>
+
 </html>
