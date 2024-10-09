@@ -1,12 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
 from config import Config
 from flask_mail import Mail, Message
 from flask import jsonify
-from datetime import date
-
+from datetime import datetime
+import pyodbc
+import logging
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -112,7 +113,7 @@ class Receta(db.Model):
     PacienteID = db.Column(db.Integer, db.ForeignKey('Paciente.PacienteID'), nullable=False)
     DoctorID = db.Column(db.Integer, db.ForeignKey('Doctor.DoctorID'), nullable=False)
     MedicamentoID = db.Column(db.Integer, db.ForeignKey('Medicamento.MedicamentoID'), nullable=False)
-    FechaEntrega = db.Column(db.Date, nullable=False)
+    FechaEntrega = db.Column(db.Date, default=datetime.today().date, nullable=True)
     CantidadMedicamento = db.Column(db.Integer, nullable=False)
 
     paciente = db.relationship('Paciente', backref='recetas_asociadas')
@@ -132,7 +133,6 @@ def validate_email(email):
 
 
 # Definir la ruta para /entrega_tercero
-
 @app.route('/entrega_tercero', methods=['GET', 'POST'])
 def entregar_tercero():
     if request.method == 'POST':
@@ -140,8 +140,6 @@ def entregar_tercero():
         # Por ejemplo, obtener paciente, recetas, etc.
         return render_template('entrega_tercero.html')
     return render_template('entrega_tercero.html')
-
-
 
 
 
@@ -214,7 +212,9 @@ def receta_medica(rut):
     
     if paciente:
         recetas = Receta.query.filter_by(PacienteID=paciente.PacienteID).all()
-        return render_template('recetaMedica.html', paciente=paciente, recetas=recetas)
+        today = datetime.now().date()  # Obtener la fecha actual
+        today_formatted = today.strftime('%Y-%m-%d')  # Formatear la fecha
+        return render_template('recetaMedica.html', paciente=paciente, recetas=recetas, today=today_formatted)
     else:
         flash('No se encontró el paciente.', 'error')
         return redirect(url_for('dashboard_farmaceutico'))
@@ -324,33 +324,52 @@ def get_medicamentos(tipo_id):
     # Retornar los datos en formato JSON
     return jsonify(medicamentos_data)
 
+# Configuración del registro de errores
+logging.basicConfig(level=logging.INFO)
+
+# Obtener los valores desde el archivo config.py
+server = Config.DB_SERVER
+database = Config.DB_NAME
+username = Config.DB_USER
+password = Config.DB_PASSWORD
+driver = Config.DB_DRIVER
+
+# Establecer la cadena de conexión a SQL Server
+connection_string = f'DRIVER={{{driver}}};SERVER={server};DATABASE={database};UID={username};PWD={password}'
+
+def get_db_connection():
+    """Función para obtener una nueva conexión a la base de datos"""
+    return pyodbc.connect(connection_string)
+
+# Establecer conexión a SQL Server usando la configuración
+conn = pyodbc.connect(app.config['SQLALCHEMY_DATABASE_URI'].replace("mssql+pyodbc:///?odbc_connect=", ""))
+
 @app.route('/cargar_medicamento', methods=['POST'])
 def cargar_medicamento():
+    data = request.json
+    rut = data['rut']
+    nombre = data['nombre']
+    fecha = data['fecha']
+    medicamentos = data['medicamentos']
+    
     try:
-        data = request.get_json()
-        
-        fecha = data.get('fecha')
-        rut = data.get('rut')
-        nombre = data.get('nombre')
-        medicamentos = data.get('medicamentos')
-        
+        cursor = conn.cursor()
         for medicamento in medicamentos:
-            nuevo_registro = MedicamentoEntregado(
-                fecha=fecha,
-                rut=rut,
-                nombre=nombre,
-                medicamento_nombre=medicamento['nombre'],
-                cantidad=medicamento['cantidad']
-            )
-            db.session.add(nuevo_registro)
-
-        db.session.commit()
+            cursor.execute('''
+                INSERT INTO [dbo].[medicamentos_entregados] (rut, nombre, fecha, medicamento_nombre, cantidad) 
+                VALUES (?, ?, ?, ?, ?)
+            ''', rut, nombre, fecha, medicamento['nombre'], medicamento['cantidad'])
         
-        return jsonify({"mensaje": "Medicamentos entregados correctamente."})
+        conn.commit()  # Confirmar la transacción
+        
+        return jsonify({"success": True, "mensaje": "Medicamentos entregados correctamente."})
     
     except Exception as e:
-        print(f"Error al procesar la solicitud: {str(e)}")
-        return jsonify({"error": "Hubo un error al procesar la solicitud."}), 500
+        conn.rollback()  # Revertir en caso de error
+        return jsonify({"success": False, "mensaje": str(e)})
+    finally:
+        cursor.close()
+
 
 if __name__ == '__main__':
     app.secret_key = Config.SECRET_KEY

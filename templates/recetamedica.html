@@ -31,11 +31,11 @@
             <div class="column">
                 <div class="checkbox-container">
                     <div>
-                        <input type="checkbox" id="entrega_paciente" name="entrega_paciente" onchange="toggleFields()">
+                        <input type="radio" id="entrega_paciente" name="entrega_opcion" value="paciente" onchange="toggleFields()" required>
                         <label for="entrega_paciente">Entrega paciente</label>
                     </div>
                     <div>
-                        <input type="checkbox" id="entrega_tercero" name="entrega_tercero" onchange="toggleFields()">
+                        <input type="radio" id="entrega_tercero" name="entrega_opcion" value="tercero" onchange="toggleFields()" required>
                         <label for="entrega_tercero">Entrega Tercero</label>
                     </div>
                 </div>
@@ -43,7 +43,7 @@
             <div class="column">
                 <div class="form-group">
                     <label for="fecha">Fecha:</label>
-                    <input type="date" id="fecha" name="fecha" required>
+                    <input type="date" id="fecha" name="fecha" required value="{{ today }}" readonly>
                 </div>
             </div>
         </div>
@@ -196,10 +196,11 @@
         function entregarMedicamentos() {
             // Validar si la entrega es para un tercero
             const entregaTerceroCheckbox = document.getElementById('entrega_tercero');
-            const rut = entregaTerceroCheckbox.checked ? document.getElementById('rut').value : '{{ paciente.Rut }}';
-            const nombre = entregaTerceroCheckbox.checked ? document.getElementById('nombre').value : '{{ paciente.Nombre }}';
-            const fecha = document.getElementById('fecha').value;
+            const rut = entregaTerceroCheckbox.checked ? document.getElementById('rut').value.trim() : '{{ paciente.Rut }}';
+            const nombre = entregaTerceroCheckbox.checked ? document.getElementById('nombre').value.trim() : '{{ paciente.Nombre }}';
+            const fecha = document.getElementById('fecha').value; // Mantener la fecha sin cambios
 
+            // Validaciones
             if (!fecha) {
                 alert('Por favor, seleccione una fecha.');
                 return;
@@ -215,6 +216,20 @@
                 return;
             }
 
+            // Formatear los medicamentos cargados para enviar
+            const medicamentosFormateados = medicamentosCargados.map(medicamento => {
+                return {
+                    nombre: medicamento.nombre.trim(),  // Limpiar espacios en blanco
+                    cantidad: parseInt(medicamento.cantidad, 10)  // Asegurarse de que sea un número
+                };
+            });
+
+            // Confirmar antes de enviar
+            const confirmacion = confirm(`¿Está seguro de que desea entregar los siguientes medicamentos?\n${medicamentosCargados.map(m => `Medicamento: ${m.nombre}, Cantidad: ${m.cantidad}`).join('; ')}`);
+            if (!confirmacion) {
+                return; // Si el usuario cancela, no se envía la solicitud
+            }
+
             // Enviar los datos a la ruta de Flask
             fetch('/cargar_medicamento', {
                 method: 'POST',
@@ -224,25 +239,27 @@
                 body: JSON.stringify({
                     rut: rut,
                     nombre: nombre,
-                    fecha: fecha,
-                    medicamentos: medicamentosCargados  // Enviar los medicamentos cargados
+                    fecha: fecha, // Mantener la fecha tal cual
+                    medicamentos: medicamentosFormateados  // Enviar los medicamentos cargados formateados
                 })
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        mostrarMensaje();
-                        medicamentosCargados = [];  // Limpiar array de medicamentos cargados
-                        document.getElementById('medicamentos').innerHTML = '';  // Limpiar lista visual
-                    } else {
-                        alert('Error al entregar medicamentos. Intente de nuevo.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error al enviar la solicitud:', error);
-                    alert('Hubo un error al procesar la solicitud.');
-                });
+            .then(response => response.json())
+            .then(data => {
+                if (data.mensaje) {
+                    alert(data.mensaje); // Mostrar mensaje de éxito desde el servidor
+                    
+                    // Redirigir a la página de dashboard_farmaceutico
+                    window.location.href = '/dashboard_farmaceutico'; // Cambia esta ruta según sea necesario
+                } else {
+                    alert('Error: No se pudo entregar los medicamentos.');
+                }
+            })
+            .catch(error => {
+                console.error('Error al enviar la solicitud:', error);
+                alert('Hubo un error al procesar la solicitud.');
+            });
         }
+
     </script>
 
 </body>
