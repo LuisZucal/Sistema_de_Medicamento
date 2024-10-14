@@ -58,7 +58,6 @@
                 <button type="submit" class="btn-submit">Crear Usuario</button>
             </form>
 
-            <!-- Mostrar mensajes de error o éxito -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     <div class="alert" role="alert" aria-live="assertive">
@@ -77,18 +76,8 @@
         </div>
     </div>
 
-    <script>
-        // Mostrar el campo de especialización solo si se selecciona Doctor
-        document.getElementById('tipo_usuario').addEventListener('change', function() {
-            var especializacionGroup = document.getElementById('especializacion-group');
-            if (this.value === 'doctor') {
-                especializacionGroup.style.display = 'block';
-            } else {
-                especializacionGroup.style.display = 'none';
-                document.getElementById('especializacion').value = ''; // Limpiar el campo
-            }
-        });
-    </script>
+    <!-- Enlace al archivo JS -->
+    <script src="{{ url_for('static', filename='js/crear_usuario.js') }}"></script>
 
 </body>
 </html>

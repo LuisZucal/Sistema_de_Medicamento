@@ -1,6 +1,7 @@
 import os
 from urllib.parse import quote_plus
 
+
 class Config:
 # Configuración de la primera base de datos
     DB_DRIVER = "ODBC Driver 17 for SQL Server"
