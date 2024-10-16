@@ -9,6 +9,10 @@ def init_routes(app):
     @app.route('/')
     def index():
         return redirect(url_for('login'))
+    
+    @app.route('/forgot-password')
+    def forgot_password():
+        return render_template('forgot-password.html')
 
     # Ruta de login
     @app.route('/login', methods=['GET', 'POST'])
