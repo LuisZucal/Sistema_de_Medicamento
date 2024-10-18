@@ -10,7 +10,7 @@ $(document).ready(function () {
 
             // Iterar sobre los tipos de medicamento y añadirlos al combo box
             $.each(data.tipos_medicamentos, function (index, tipo) {
-                tipoSelect.append('<option value="' + tipo.id_tipo + '">' + tipo.nombre_tipo + '</option>');
+                tipoSelect.append(`<option value="${tipo.id_tipo}">${tipo.nombre_tipo}</option>`);
             });
         },
         error: function () {
@@ -32,32 +32,29 @@ function toggleFields() {
 }
 
 function showMedicamentos() {
-    const tipoMedicamento = document.getElementById('tipo-medicamento').value;
-    const medicamentoContainer = document.getElementById('medicamento-container');
-    const medicamentoSelect = document.getElementById('medicamento');
+    const tipoId = $('#tipo-medicamento').val();  // Obtener el tipo seleccionado
+    const medicamentoSelect = $('#medicamento');
 
-    medicamentoSelect.innerHTML = '<option value="">Seleccione un medicamento</option>';
+    if (tipoId) {
+        $.ajax({
+            url: `/medicamentos/${tipoId}`,  // Llamada a la API para obtener medicamentos
+            method: 'GET',
+            success: function (data) {
+                medicamentoSelect.empty();  // Limpiar opciones anteriores
+                medicamentoSelect.append('<option value="">Seleccione un medicamento</option>'); // Opción por defecto
 
-    if (tipoMedicamento) {
-        medicamentoContainer.style.display = 'block';
-
-        // Realiza la llamada AJAX para obtener los medicamentos según el tipo seleccionado
-        fetch(`/medicamentos/${tipoMedicamento}`)
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(medicamento => {
-                    const option = document.createElement('option');
-                    option.value = medicamento.id;
-                    option.textContent = medicamento.nombre; // Solo mostrar el nombre
-                    medicamentoSelect.appendChild(option);
+                // Iterar sobre los medicamentos y añadirlos al combo box
+                $.each(data, function (index, medicamento) {
+                    medicamentoSelect.append(`<option value="${medicamento.MedicamentoID}">${medicamento.Nombre}</option>`);
                 });
-            })
-            .catch(error => {
-                console.error('Error al obtener medicamentos:', error);
-                alert('No se pudieron cargar los medicamentos. Intente de nuevo.');
-            });
+                $('#medicamento-container').show();  // Mostrar el contenedor de medicamentos
+            },
+            error: function () {
+                alert('Error al cargar medicamentos.');
+            }
+        });
     } else {
-        medicamentoContainer.style.display = 'none';
+        $('#medicamento-container').hide();  // Ocultar si no se selecciona un tipo
     }
 }
 
@@ -68,6 +65,7 @@ function cargarMedicamento() {
     const medicamentoNombre = medicamentoSelect.options[medicamentoSelect.selectedIndex].text;
     const cantidad = document.getElementById('cantidad').value;
 
+    // Validaciones
     if (!medicamentoSelect.value) {
         alert('Por favor, seleccione un medicamento.');
         return;
@@ -78,6 +76,7 @@ function cargarMedicamento() {
         return;
     }
 
+    // Crear y mostrar el nuevo elemento de medicamento
     const medicamentosDiv = document.getElementById('medicamentos');
     const newMedicamento = document.createElement('div');
     newMedicamento.textContent = `${medicamentoNombre} - Cantidad: ${cantidad}`;
@@ -93,8 +92,8 @@ function cargarMedicamento() {
 function entregarMedicamentos() {
     // Validar si la entrega es para un tercero
     const entregaTerceroCheckbox = document.getElementById('entrega_tercero');
-    const rut = entregaTerceroCheckbox.checked ? document.getElementById('rut').value.trim() : '{{ paciente.Rut }}';
-    const nombre = entregaTerceroCheckbox.checked ? document.getElementById('nombre').value.trim() : '{{ paciente.Nombre }}';
+    const rut = entregaTerceroCheckbox.checked ? document.getElementById('rut').value.trim() : '';
+    const nombre = entregaTerceroCheckbox.checked ? document.getElementById('nombre').value.trim() : '';
     const fecha = document.getElementById('fecha').value; // Mantener la fecha sin cambios
 
     // Validaciones
@@ -118,8 +117,11 @@ function entregarMedicamentos() {
         rut: rut,
         nombre: nombre,
         fecha: fecha,
-        medicamentos: medicamentosCargados
+        medicamentos: medicamentosCargados  // Enviar el array de medicamentos
     };
+
+    // Mostrar datos enviados para depuración
+    console.log(entregaData);
 
     // Realizar la llamada AJAX para entregar medicamentos
     $.ajax({
@@ -127,13 +129,17 @@ function entregarMedicamentos() {
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(entregaData),
-        success: function () {
-            mostrarMensaje();  // Mostrar el mensaje de éxito
+        success: function (response) {
+            alert(response.message);  // Mostrar el mensaje de éxito
             medicamentosCargados = [];  // Limpiar la lista de medicamentos cargados
             document.getElementById('medicamentos').innerHTML = ''; // Limpiar la lista visualizada
+
+            // Redirigir a dashboard_farmaceutico después de la entrega exitosa
+            window.location.href = '/dashboard_farmaceutico'; 
         },
-        error: function () {
-            alert('Error al entregar los medicamentos. Por favor, intente de nuevo.');
+        error: function (xhr) {
+            alert('Error al entregar los medicamentos: ' + xhr.responseJSON.error); // Mostrar mensaje de error
         }
     });
 }
+

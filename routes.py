@@ -86,13 +86,46 @@ def init_routes(app):
             return redirect(url_for('dashboard_farmaceutico'))
 
     # Ruta para entrega de medicamentos
-    @app.route('/entrega', methods=['POST'])
-    def entrega():
-        accion = request.form['accion']
-        if accion == 'entregar_medicamento':
-            # Lógica para entregar medicamento
-            # ...
-            pass
-        return redirect(url_for('dashboard_farmaceutico'))
+    @app.route('/entregar_medicamentos', methods=['POST'])
+    def entregar_medicamentos():
+        try:
+            data = request.get_json()
 
-  
+            # Aquí verifica si data['medicamentos'] es una lista de objetos y procesa como necesites
+            for medicamento in data['medicamentos']:
+                # Guardar cada medicamento individualmente
+                medicamento_entregado = MedicamentoEntregado(
+                    rut=data['rut'],
+                    nombre=data['nombre'],
+                    fecha=data['fecha'],
+                    medicamento_nombre=medicamento['nombre'],  # Aquí está el nombre del medicamento
+                    cantidad=medicamento['cantidad']  # Aquí está la cantidad
+                )
+
+                db.session.add(medicamento_entregado)
+
+            db.session.commit()
+            return jsonify({"message": "Medicamentos entregados correctamente."}), 200
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error al entregar medicamentos: {str(e)}")
+            return jsonify({"error": "Error al entregar medicamentos."}), 500
+
+
+    
+
+    @app.route('/medicamentos/<int:tipo_id>', methods=['GET'])
+    def mostrar_medicamentos(tipo_id):
+        try:
+            # Obtener medicamentos según el tipo
+            medicamentos = Medicamento.query.filter_by(id_tipo=tipo_id).all()
+            if not medicamentos:
+                return jsonify({'mensaje': 'No se encontraron medicamentos para este tipo.'}), 404
+            
+            # Crear una lista de medicamentos
+            medicamentos_data = [{'MedicamentoID': med.MedicamentoID, 'Nombre': med.Nombre} for med in medicamentos]
+            return jsonify(medicamentos_data)
+
+        except Exception as e:
+            print(f'Error: {str(e)}')  # Loguear el error
+            return jsonify({'mensaje': 'No se pudieron cargar los medicamentos. Intente de nuevo.'}), 500
