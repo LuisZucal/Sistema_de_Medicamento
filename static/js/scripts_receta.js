@@ -90,10 +90,27 @@ function cargarMedicamento() {
 }
 
 function entregarMedicamentos() {
-    // Validar si la entrega es para un tercero
+    // Obtener referencias a los checkboxes
     const entregaTerceroCheckbox = document.getElementById('entrega_tercero');
-    const rut = entregaTerceroCheckbox.checked ? document.getElementById('rut').value.trim() : '';
-    const nombre = entregaTerceroCheckbox.checked ? document.getElementById('nombre').value.trim() : '';
+    const entregaPacienteCheckbox = document.getElementById('entrega_paciente');
+
+    // Variables para almacenar RUT y Nombre
+    let rut = '';
+    let nombre = '';
+
+    // Verificar si 'entrega_tercero' está seleccionado
+    if (entregaTerceroCheckbox.checked) {
+        rut = document.getElementById('rut').value.trim();
+        nombre = document.getElementById('nombre').value.trim();
+    }
+    // Verificar si 'entrega_paciente' está seleccionado
+    else if (entregaPacienteCheckbox.checked) {
+        // Obtener datos del paciente desde las variables de la plantilla
+        rut = "{{ paciente.Rut }}";  // Asegúrate de que estas variables estén disponibles
+        nombre = "{{ paciente.Nombre }}";
+    }
+
+    // Obtener la fecha
     const fecha = document.getElementById('fecha').value; // Mantener la fecha sin cambios
 
     // Validaciones
@@ -102,13 +119,17 @@ function entregarMedicamentos() {
         return;
     }
 
-    if (entregaTerceroCheckbox.checked && (!rut || !nombre)) {
-        alert('Por favor, complete el RUT y Nombre del tercero.');
+    if ((entregaTerceroCheckbox.checked || entregaPacienteCheckbox.checked) && (!rut || !nombre)) {
+        alert('Por favor, complete el RUT y Nombre.');
         return;
     }
 
     if (medicamentosCargados.length === 0) {
         alert('No hay medicamentos cargados para entregar.');
+        return;
+    }
+    if (!entregaPaciente && !entregaTercero) {
+        alert('Por favor, seleccione al menos una opción de entrega.');
         return;
     }
 
@@ -135,11 +156,10 @@ function entregarMedicamentos() {
             document.getElementById('medicamentos').innerHTML = ''; // Limpiar la lista visualizada
 
             // Redirigir a dashboard_farmaceutico después de la entrega exitosa
-            window.location.href = '/dashboard_farmaceutico'; 
+            window.location.href = '/dashboard_farmaceutico';
         },
         error: function (xhr) {
             alert('Error al entregar los medicamentos: ' + xhr.responseJSON.error); // Mostrar mensaje de error
         }
     });
 }
-

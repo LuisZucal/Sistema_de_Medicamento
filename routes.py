@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, Farmaceutico, Doctor, Paciente, Receta, TipoMedicamento, Medicamento, MedicamentoEntregado
 from datetime import datetime
 
+
 def init_routes(app):
 
     # Ruta de inicio
@@ -86,30 +87,36 @@ def init_routes(app):
             return redirect(url_for('dashboard_farmaceutico'))
 
     # Ruta para entrega de medicamentos
+
     @app.route('/entregar_medicamentos', methods=['POST'])
     def entregar_medicamentos():
+        data = request.get_json()  # Obtener los datos JSON enviados desde el frontend
+
+        rut = data['rut']
+        nombre = data['nombre']
+        fecha = data['fecha']
+        medicamentos = data['medicamentos']  # Este es un array de medicamentos cargados
+
         try:
-            data = request.get_json()
-
-            # Aquí verifica si data['medicamentos'] es una lista de objetos y procesa como necesites
-            for medicamento in data['medicamentos']:
-                # Guardar cada medicamento individualmente
-                medicamento_entregado = MedicamentoEntregado(
-                    rut=data['rut'],
-                    nombre=data['nombre'],
-                    fecha=data['fecha'],
-                    medicamento_nombre=medicamento['nombre'],  # Aquí está el nombre del medicamento
-                    cantidad=medicamento['cantidad']  # Aquí está la cantidad
+            # Recorrer los medicamentos y guardarlos en la tabla correspondiente
+            for medicamento in medicamentos:
+                nuevo_entrega = MedicamentoEntregado(
+                    rut=rut,
+                    nombre=nombre,
+                    fecha=fecha,
+                    medicamento_nombre=medicamento['nombre'],
+                    cantidad=medicamento['cantidad']
                 )
+                db.session.add(nuevo_entrega)
+            
+            db.session.commit()  # Confirmar la transacción
 
-                db.session.add(medicamento_entregado)
+            return jsonify({"message": "Medicamentos entregados con éxito"}), 200
 
-            db.session.commit()
-            return jsonify({"message": "Medicamentos entregados correctamente."}), 200
         except Exception as e:
-            db.session.rollback()
-            print(f"Error al entregar medicamentos: {str(e)}")
-            return jsonify({"error": "Error al entregar medicamentos."}), 500
+            db.session.rollback()  # En caso de error, revertir la transacción
+            return jsonify({"error": str(e)}), 500
+
 
 
     

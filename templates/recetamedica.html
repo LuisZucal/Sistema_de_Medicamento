@@ -8,6 +8,78 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_receta.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{{ url_for('static', filename='js/scripts_receta.js') }}"></script> <!-- Incluir archivo JS -->
+    <script>
+        function entregarMedicamentos() {
+            // Obtener referencias a los checkboxes
+            const entregaTerceroCheckbox = document.getElementById('entrega_tercero');
+            const entregaPacienteCheckbox = document.getElementById('entrega_paciente');
+
+            // Variables para almacenar RUT y Nombre
+            let rut = '';
+            let nombre = '';
+
+            // Verificar si 'entrega_tercero' está seleccionado
+            if (entregaTerceroCheckbox.checked) {
+                rut = document.getElementById('rut').value.trim();
+                nombre = document.getElementById('nombre').value.trim();
+            }
+            // Verificar si 'entrega_paciente' está seleccionado
+            else if (entregaPacienteCheckbox.checked) {
+                // Obtener datos del paciente desde las variables de la plantilla
+                rut = "{{ paciente.Rut }}";  // Asegúrate de que estas variables estén disponibles
+                nombre = "{{ paciente.Nombre }}";
+            }
+
+            // Obtener la fecha
+            const fecha = document.getElementById('fecha').value; // Mantener la fecha sin cambios
+
+            // Validaciones
+            if (!fecha) {
+                alert('Por favor, seleccione una fecha.');
+                return;
+            }
+
+            if ((entregaTerceroCheckbox.checked || entregaPacienteCheckbox.checked) && (!rut || !nombre)) {
+                alert('Por favor, complete el RUT y Nombre.');
+                return;
+            }
+
+            if (medicamentosCargados.length === 0) {
+                alert('No hay medicamentos cargados para entregar.');
+                return;
+            }
+
+            // Crear un objeto con la información de entrega
+            const entregaData = {
+                rut: rut,
+                nombre: nombre,
+                fecha: fecha,
+                medicamentos: medicamentosCargados  // Enviar el array de medicamentos
+            };
+
+            // Mostrar datos enviados para depuración
+            console.log(entregaData);
+
+            // Realizar la llamada AJAX para entregar medicamentos
+            $.ajax({
+                url: '/entregar_medicamentos',  // Asegúrate de que esta URL sea correcta en tu backend
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(entregaData),
+                success: function (response) {
+                    alert(response.message);  // Mostrar el mensaje de éxito
+                    medicamentosCargados = [];  // Limpiar la lista de medicamentos cargados
+                    document.getElementById('medicamentos').innerHTML = ''; // Limpiar la lista visualizada
+
+                    // Redirigir a dashboard_farmaceutico después de la entrega exitosa
+                    window.location.href = '/dashboard_farmaceutico';
+                },
+                error: function (xhr) {
+                    alert('Error al entregar los medicamentos: ' + xhr.responseJSON.error); // Mostrar mensaje de error
+                }
+            });
+        }
+    </script>
 </head>
 
 <body>
@@ -32,11 +104,13 @@
             <div class="column">
                 <div class="checkbox-container">
                     <div>
-                        <input type="radio" id="entrega_paciente" name="entrega_opcion" value="paciente" onchange="toggleFields()" required>
+                        <input type="radio" id="entrega_paciente" name="entrega_opcion" value="paciente"
+                            onchange="toggleFields()" required>
                         <label for="entrega_paciente">Entrega paciente</label>
                     </div>
                     <div>
-                        <input type="radio" id="entrega_tercero" name="entrega_opcion" value="tercero" onchange="toggleFields()" required>
+                        <input type="radio" id="entrega_tercero" name="entrega_opcion" value="tercero"
+                            onchange="toggleFields()" required>
                         <label for="entrega_tercero">Entrega Tercero</label>
                     </div>
                 </div>
